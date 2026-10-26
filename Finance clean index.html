@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BuildFinance — Финансовый учёт</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+/* ── Reset & Base ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: #0f0f14; display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; }
+
+/* ── Design Tokens ─────────────────────────────────────────────── */
+:root {
+  --acc: #1a1a2e;
+  --acc2: #16213e;
+  --gold: #c9a84c;
+  --goldf: #f5d87a;
+  --s: #ffffff;
+  --s2: #f8f7f5;
+  --s3: #f0efe9;
+  --b: rgba(0,0,0,0.08);
+  --b2: rgba(0,0,0,0.14);
+  --t: #1a1a1a;
+  --t2: #555;
+  --t3: #999;
+  --gr: #3B6D11;
+  --grb: #EAF3DE;
+  --rd: #A32D2D;
+  --rdb: #FCEBEB;
+  --r: 10px;
+  --r2: 14px;
+}
+
+/* ── Device Frame ──────────────────────────────────────────────── */
+.device-frame {
+  width: 390px;
+  height: 844px;
+  background: var(--s2);
+  border-radius: 44px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 0 10px #1c1c1e, 0 40px 80px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+}
+.device-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 34px;
+  background: #1c1c1e;
+  border-radius: 0 0 18px 18px;
+  z-index: 100;
+}
+
+/* ── App Shell ─────────────────────────────────────────────────── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Status Bar ────────────────────────────────────────────────── */
+.statusbar {
+  background: var(--acc);
+  padding: 14px 24px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  height: 46px;
+}
+.sb-time { color: #fff; font-size: 13px; font-weight: 600; font-family: 'Syne', sans-serif; }
+.sb-icons { display: flex; gap: 5px; align-items: center; }
+.sb-icons i { color: rgba(255,255,255,0.7); font-size: 13px; }
+
+/* ── Top Navigation ────────────────────────────────────────────── */
+.topnav {
+  background: var(--acc);
+  padding: 6px 18px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.tn-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tn-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+.tn-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+.tn-name-input {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(201,168,76,0.5);
+  outline: none;
+  width: 160px;
+  display: none;
+}
+.tn-right { display: flex; gap: 10px; align-items: center; }
+.av-sm {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.2);
+  transition: border-color 0.2s;
+}
+.av-sm:hover { border-color: var(--gold); }
+.icon-btn-hdr {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none;
+  transition: background 0.15s;
+}
+.icon-btn-hdr:hover { background: rgba(255,255,255,0.18); }
+.icon-btn-hdr i { color: rgba(255,255,255,0.8); font-size: 17px; }
+
+/* ── Scroll Body ───────────────────────────────────────────────── */
+.scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-body::-webkit-scrollbar { display: none; }
+
+/* ── Pages ─────────────────────────────────────────────────────── */
+.page { display: none; }
+.page.active { display: block; }
+.page-flex { display: none; flex-direction: column; height: calc(844px - 46px - 60px - 58px); }
+.page-flex.active { display: flex; }
+
+/* ── Bottom Nav ────────────────────────────────────────────────── */
+.nav-bar {
+  background: var(--s);
+  border-top: 0.5px solid var(--b2);
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 6px 8px;
+  flex-shrink: 0;
+}
+.nt {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; padding: 5px 10px;
+  border-radius: var(--r);
+  transition: background 0.15s;
+  flex: 1; position: relative;
+}
+.nt:hover { background: var(--s2); }
+.nt i { font-size: 20px; color: var(--t3); transition: color 0.15s; }
+.nt span { font-size: 9.5px; color: var(--t3); font-weight: 500; transition: color 0.15s; }
+.nt.active i, .nt.active span { color: var(--acc); }
+.nt.active { background: var(--s2); }
+.fab {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--acc);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; border: none;
+  transition: transform 0.15s, background 0.15s;
+  box-shadow: 0 4px 14px rgba(26,26,46,0.35);
+}
+.fab:hover { transform: scale(1.06); background: var(--acc2); }
+.fab i { color: var(--goldf); font-size: 20px; }
+.badge-dot {
+  position: absolute;
+  top: 4px; right: 8px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--rd);
+  border: 2px solid var(--s);
+  display: none;
+}
+
+/* ── Cards & Layout ────────────────────────────────────────────── */
+.card {
+  background: var(--s);
+  border: 0.5px solid var(--b);
+  border-radius: var(--r2);
+  padding: 14px;
+}
+.sec { margin: 0 16px 16px; }
+.sec-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.sec-t { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--t); }
+.link-btn {
+  font-size: 11px; color: var(--gold); font-weight: 500;
+  cursor: pointer; background: none; border: none;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.15s;
+}
+.link-btn:hover { opacity: 0.7; }
+
+/* ── Hero Card ─────────────────────────────────────────────────── */
+.hero {
+  background: var(--acc);
+  margin: 14px 16px 16px;
+  border-radius: var(--r2);
+  padding: 18px;
+}
+.hero-lbl { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+.hero-val { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+.hero-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+.hero-row { display: flex; gap: 8px; margin-top: 12px; }
+.hm { flex: 1; background: rgba(255,255,255,0.07); border-radius: var(--r); padding: 9px 10px; }
+.hm-l { font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
+.hm-v { font-size: 13px; font-weight: 600; color: #fff; font-family: 'Syne', sans-serif; }
+
+/* ── Object Scroll ─────────────────────────────────────────────── */
+.obj-scroll {
+  display: flex; gap: 10px;
+  overflow-x: auto; padding: 0 16px 4px;
+  scrollbar-width: none;
+}
+.obj-scroll::-webkit-scrollbar { display: none; }
+.op {
+  flex-shrink: 0;
+  background: var(--s);
+  border: 0.5px solid var(--b);
+  border-radius: var(--r2);
+  padding: 12px 14px;
+  width: 158px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.op:hover, .op.sel { border-color: var(--gold); }
+.op:active { transform: scale(0.97); }
+.op-n { font-size: 12.5px; font-weight: 500; color: var(--t); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.op-l { font-size: 10.5px; color: var(--t3); }
+.op-a { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--t); margin-top: 8px; }
+
+/* ── Badges ────────────────────────────────────────────────────── */
+.badge { display: inline-flex; font-size: 10px; padding: 2px 8px; border-radius: 12px; font-weight: 500; margin-top: 5px; }
+.badge-active { background: var(--grb); color: var(--gr); }
+.badge-done { background: #E6F1FB; color: #0C447C; }
+.badge-admin { background: #EEEDFE; color: #534AB7; }
+.badge-mgr { background: #fef3d8; color: #7a5200; }
+.badge-worker { background: var(--s2); color: var(--t2); }
+
+/* ── Transactions ──────────────────────────────────────────────── */
+.tx-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--b); }
+.tx-row:last-child { border: none; }
+.tx-ico { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.tx-inf { flex: 1; min-width: 0; }
+.tx-n { font-size: 12.5px; font-weight: 500; color: var(--t); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-m { font-size: 10.5px; color: var(--t3); margin-top: 1px; }
+.tx-a { font-size: 13px; font-weight: 600; flex-shrink: 0; }
+.up { color: var(--gr); }
+.down { color: var(--rd); }
+.chip { display: inline-flex; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 500; }
+.ch-cash { background: #fef3d8; color: #7a5200; }
+.ch-card { background: #E6F1FB; color: #0C447C; }
+.ch-wire { background: var(--grb); color: var(--gr); }
+
+/* ── Metrics Grid ──────────────────────────────────────────────── */
+.metrics-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 16px 12px; }
+.met { background: var(--s); border: 0.5px solid var(--b); border-radius: var(--r2); padding: 12px; }
+.met-l { font-size: 10px; color: var(--t3); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+.met-v { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--t); }
+
+/* ── Smeta Table ───────────────────────────────────────────────── */
+.smeta-t { width: 100%; font-size: 12px; border-collapse: collapse; }
+.smeta-t th { text-align: left; padding: 7px 5px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--t3); border-bottom: 0.5px solid var(--b); font-weight: 500; }
+.smeta-t th:not(:first-child) { text-align: right; }
+.smeta-t td { padding: 8px 5px; border-bottom: 0.5px solid var(--b); color: var(--t); }
+.smeta-t td:not(:first-child) { text-align: right; font-weight: 500; }
+.smeta-t tr:last-child td { border: none; }
+.smeta-total { background: var(--s2); }
+
+/* ── Chat ──────────────────────────────────────────────────────── */
+.chat-list .ci {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; cursor: pointer;
+  transition: background 0.1s;
+  border-bottom: 0.5px solid var(--b);
+}
+.chat-list .ci:hover, .chat-list .ci.active { background: var(--s2); }
+.ci-av {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; flex-shrink: 0;
+}
+.ci-inf { flex: 1; min-width: 0; }
+.ci-name { font-size: 13px; font-weight: 500; color: var(--t); }
+.ci-last { font-size: 11.5px; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.ci-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.ci-time { font-size: 10.5px; color: var(--t3); }
+.unread-badge { background: var(--acc); color: #fff; font-size: 10px; font-weight: 600; border-radius: 10px; padding: 1px 6px; }
+.chat-topbar {
+  background: var(--s);
+  border-bottom: 0.5px solid var(--b);
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.chat-msgs {
+  flex: 1; overflow-y: auto;
+  padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.chat-msgs::-webkit-scrollbar { display: none; }
+.msg { max-width: 80%; padding: 9px 12px; border-radius: 14px; font-size: 12.5px; line-height: 1.55; }
+.msg.me { background: var(--acc); color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+.msg.them { background: var(--s); color: var(--t); align-self: flex-start; border-bottom-left-radius: 3px; border: 0.5px solid var(--b); }
+.msg-sender { font-size: 10.5px; color: var(--t3); margin-bottom: 2px; align-self: flex-start; padding-left: 2px; }
+.msg-time { font-size: 10px; opacity: 0.5; margin-top: 2px; display: block; text-align: right; }
+.chat-in-row {
+  display: flex; gap: 8px;
+  padding: 10px 16px 12px;
+  background: var(--s);
+  border-top: 0.5px solid var(--b);
+  flex-shrink: 0;
+}
+.chat-in {
+  flex: 1; padding: 9px 14px;
+  border: 0.5px solid var(--b2);
+  border-radius: 22px;
+  font-size: 13px;
+  background: var(--s2);
+  color: var(--t);
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.15s;
+}
+.chat-in:focus { outline: none; border-color: var(--gold); }
+.send-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--acc);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none;
+  transition: transform 0.15s, background 0.15s;
+}
+.send-btn:hover { background: var(--acc2); transform: scale(1.05); }
+.send-btn i { color: var(--goldf); font-size: 15px; }
+
+/* ── AI Assistant ──────────────────────────────────────────────── */
+.ai-msgs {
+  flex: 1; overflow-y: auto;
+  padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.ai-msgs::-webkit-scrollbar { display: none; }
+.amsg { max-width: 85%; padding: 9px 12px; border-radius: 14px; font-size: 12.5px; line-height: 1.55; }
+.amsg.ai { background: var(--s); color: var(--t); align-self: flex-start; border-bottom-left-radius: 3px; border: 0.5px solid var(--b); }
+.amsg.user { background: var(--acc); color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+.qb-wrap { display: flex; gap: 6px; overflow-x: auto; padding: 6px 16px; scrollbar-width: none; flex-shrink: 0; }
+.qb-wrap::-webkit-scrollbar { display: none; }
+.qb {
+  flex-shrink: 0; font-size: 11px; padding: 6px 12px;
+  border: 0.5px solid var(--b2); border-radius: 20px;
+  background: var(--s); color: var(--t2);
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  white-space: nowrap; transition: border-color 0.15s;
+}
+.qb:hover { border-color: var(--gold); color: var(--t); }
+
+/* ── Settings / Users ──────────────────────────────────────────── */
+.user-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 0.5px solid var(--b);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.user-row:hover { background: var(--s2); }
+.toggle {
+  width: 40px; height: 22px; border-radius: 11px;
+  position: relative; cursor: pointer;
+  transition: background 0.2s; flex-shrink: 0;
+  border: none;
+}
+.toggle.on { background: var(--gr); }
+.toggle.off { background: #B4B2A9; }
+.toggle::after {
+  content: ''; position: absolute; top: 3px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; transition: left 0.2s;
+}
+.toggle.on::after { left: 21px; }
+.toggle.off::after { left: 3px; }
+
+/* ── Bottom Sheet ──────────────────────────────────────────────── */
+.sheet-overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(26,26,46,0.5); z-index: 50;
+  display: none;
+}
+.sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--s);
+  border-radius: 16px 16px 0 0;
+  padding: 18px 18px 36px;
+  z-index: 60;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 88%;
+  overflow-y: auto;
+}
+.sheet::-webkit-scrollbar { display: none; }
+.sheet.open { transform: translateY(0); }
+.sh-handle { width: 36px; height: 4px; background: var(--b2); border-radius: 2px; margin: 0 auto 16px; }
+.sh-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; color: var(--t); margin-bottom: 16px; }
+
+/* ── Forms ─────────────────────────────────────────────────────── */
+.fg { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.fl { font-size: 11px; color: var(--t3); letter-spacing: 0.3px; }
+.fi {
+  padding: 10px 12px;
+  border: 0.5px solid var(--b2);
+  border-radius: var(--r);
+  font-size: 13px;
+  background: var(--s2);
+  color: var(--t);
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.fi:focus { outline: none; border-color: var(--gold); }
+select.fi { cursor: pointer; }
+.f2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn-full {
+  width: 100%; padding: 13px;
+  border-radius: var(--r2);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  border: none; margin-top: 6px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn-full:active { transform: scale(0.98); opacity: 0.9; }
+.btn-dark { background: var(--acc); color: #fff; }
+.btn-gold { background: var(--gold); color: #1a1a1a; }
+.btn-outline { background: transparent; color: var(--t); border: 0.5px solid var(--b2) !important; border: none; }
+
+/* ── Loading Dots ──────────────────────────────────────────────── */
+.dot { width: 5px; height: 5px; background: var(--t3); border-radius: 50%; display: inline-block; animation: blink 1.2s infinite; }
+.dot:nth-child(2) { animation-delay: .2s; }
+.dot:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .2; } 40% { opacity: 1; } }
+
+/* ── Misc Utilities ────────────────────────────────────────────── */
+.divider { height: 0.5px; background: var(--b); margin: 0 16px; }
+.p-section { padding: 14px 16px 6px; }
+.page-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--t); }
+.no-access {
+  padding: 56px 32px;
+  text-align: center;
+  display: none;
+}
+.no-access i { font-size: 44px; color: var(--t3); }
+.no-access h3 { margin-top: 14px; font-size: 15px; font-weight: 500; color: var(--t2); }
+.no-access p { margin-top: 6px; font-size: 12px; color: var(--t3); }
+
+/* ── AI Tip Card ───────────────────────────────────────────────── */
+.ai-tip-card {
+  background: var(--s);
+  border: 0.5px solid rgba(201,168,76,0.25);
+  border-radius: var(--r2);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.ai-tip-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: var(--gold);
+  border-radius: 0;
+}
+
+/* ── Responsive (desktop preview) ─────────────────────────────── */
+@media (max-width: 420px) {
+  html, body { align-items: flex-start; background: var(--s2); }
+  .device-frame {
+    width: 100%; height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .device-notch { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="device-frame" id="app">
+  <div class="device-notch"></div>
+
+  <div class="app">
+
+    <!-- Status Bar -->
+    <div class="statusbar">
+      <div class="sb-time" id="sb-time">9:41</div>
+      <div class="sb-icons">
+        <i class="ti ti-wifi"></i>
+        <i class="ti ti-signal-4g"></i>
+        <i class="ti ti-battery-2"></i>
+      </div>
+    </div>
+
+    <!-- Top Nav -->
+    <div class="topnav">
+      <div class="tn-logo">
+        <div class="tn-dot"></div>
+        <span class="tn-name" id="co-name" onclick="editCoName()" title="Нажмите для редактирования">BuildFinance</span>
+        <input class="tn-name-input" id="co-input" value="BuildFinance" onblur="saveCoName()" onkeydown="if(event.key==='Enter')saveCoName()">
+      </div>
+      <div class="tn-right">
+        <div class="av-sm" id="cur-av" style="background:#5DCAA5;color:#085041" onclick="showTab('settings')">АС</div>
+        <button class="icon-btn-hdr" onclick="showTab('chat')">
+          <i class="ti ti-message-2"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scroll Body -->
+    <div class="scroll-body">
+
+      <!-- ══ PAGE: HOME ══════════════════════════════════════════ -->
+      <div id="page-home" class="page active">
+
+        <!-- Finance block (admin-controlled visibility) -->
+        <div id="finance-block">
+          <div class="hero">
+            <div class="hero-lbl">Общая прибыль</div>
+            <div class="hero-val" id="h-profit">7 719 000 ₽</div>
+            <div class="hero-sub" id="h-sub">рентабельность 34.7% · 3 объекта</div>
+            <div class="hero-row">
+              <div class="hm"><div class="hm-l">Выручка</div><div class="hm-v" id="h-rev">—</div></div>
+              <div class="hm"><div class="hm-l">Расходы</div><div class="hm-v" id="h-exp">—</div></div>
+              <div class="hm"><div class="hm-l">Объектов</div><div class="hm-v" id="h-cnt">3</div></div>
+            </div>
+          </div>
+
+          <div style="padding: 0 16px; margin-bottom: 9px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="page-title">Объекты</div>
+            <button class="link-btn" onclick="showTab('objects')">Все →</button>
+          </div>
+          <div class="obj-scroll" id="obj-scroll-home"></div>
+
+          <div style="height: 14px;"></div>
+
+          <div class="sec">
+            <div class="sec-hdr">
+              <div class="page-title">Последние операции</div>
+              <span class="link-btn" id="tx-cnt-lbl" style="color: var(--t3); cursor: default;"></span>
+            </div>
+            <div class="card"><div id="last-tx-list"></div></div>
+          </div>
+        </div>
+
+        <!-- No finance access message -->
+        <div class="no-access" id="no-fin-msg">
+          <i class="ti ti-lock"></i>
+          <h3>Финансы недоступны</h3>
+          <p>Обратитесь к администратору для получения доступа</p>
+        </div>
+
+        <!-- AI Tip -->
+        <div class="sec">
+          <div class="ai-tip-card">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+              <div style="width: 26px; height: 26px; border-radius: 50%; background: var(--acc); display: flex; align-items: center; justify-content: center;">
+                <i class="ti ti-sparkles" style="color: var(--goldf); font-size: 13px;"></i>
+              </div>
+              <div style="font-size: 12.5px; font-weight: 600; color: var(--t); font-family: 'Syne', sans-serif;">AI-рекомендация</div>
+            </div>
+            <div id="ai-tip-home" style="font-size: 12px; color: var(--t2); line-height: 1.6;"></div>
+            <button class="link-btn" style="margin-top: 10px;" onclick="showTab('advisor')">Задать вопрос ассистенту →</button>
+          </div>
+        </div>
+
+        <div style="height: 16px;"></div>
+      </div>
+
+      <!-- ══ PAGE: OBJECTS ═══════════════════════════════════════ -->
+      <div id="page-objects" class="page">
+        <div style="height: 14px;"></div>
+        <div id="obj-list-full"></div>
+        <div id="obj-detail-area"></div>
+        <div style="height: 20px;"></div>
+      </div>
+
+      <!-- ══ PAGE: CHAT ══════════════════════════════════════════ -->
+      <div id="page-chat" class="page">
+        <div id="chat-list-view">
+          <div style="padding: 12px 16px 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="page-title">Сообщения</div>
+            <button class="link-btn" onclick="openNewDM()"><i class="ti ti-plus" style="font-size: 12px;"></i> Новый чат</button>
+          </div>
+          <div style="padding: 0 16px 12px;">
+            <div style="padding: 8px 13px; background: var(--s); border: 0.5px solid var(--b); border-radius: 20px; font-size: 12.5px; color: var(--t3); display: flex; align-items: center; gap: 7px;">
+              <i class="ti ti-search" style="font-size: 14px;"></i> Поиск по чатам
+            </div>
+          </div>
+          <div class="chat-list" id="chat-list-items"></div>
+        </div>
+        <div id="chat-room-view" style="display: none; flex-direction: column; height: calc(844px - 46px - 60px - 58px);"></div>
+      </div>
+
+    </div><!-- end scroll-body -->
+
+    <!-- ══ PAGE: AI ADVISOR (flex, outside scroll) ═════════════ -->
+    <div id="page-advisor" class="page-flex" style="height: calc(844px - 46px - 60px - 58px);">
+      <div style="padding: 10px 16px 10px; border-bottom: 0.5px solid var(--b); background: var(--s); display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--acc); display: flex; align-items: center; justify-content: center;">
+          <i class="ti ti-sparkles" style="color: var(--goldf); font-size: 15px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 13px; font-weight: 600; font-family: 'Syne', sans-serif; color: var(--t);">AI-ассистент</div>
+          <div style="font-size: 10.5px; color: var(--t3);">Финансы, платежи, советы</div>
+        </div>
+      </div>
+      <div class="ai-msgs" id="ai-msgs">
+        <div class="amsg ai">
+          Привет! Я помню все ваши объекты и операции этой сессии.<br><br>
+          Напишите платёж в свободной форме:<br>
+          <strong>«оплатил доставку 19 700 ₽, объект Long Island Pool»</strong><br><br>
+          Внесу в учёт и пересчитаю рентабельность.
+        </div>
+      </div>
+      <div class="qb-wrap">
+        <span class="qb" onclick="fillAI('Доставка 19700₽, объект Long Island Pool')">📦 Доставка</span>
+        <span class="qb" onclick="fillAI('Получил от клиента 850000₽, объект Manhattan Office')">💰 Оплата клиента</span>
+        <span class="qb" onclick="fillAI('Зарплата бригаде 430000₽ наличными, объект Brooklyn Apt')">👷 Зарплата нал.</span>
+        <span class="qb" onclick="fillAI('Материалы за наличные 30400₽, объект Long Island Pool')">🧱 Материалы</span>
+        <span class="qb" onclick="fillAI('Как улучшить рентабельность объектов?')">📊 Совет</span>
+      </div>
+      <div class="chat-in-row">
+        <input class="chat-in" id="ai-input" placeholder="Платёж или вопрос по финансам..." onkeydown="if(event.key==='Enter') sendAI()">
+        <button class="send-btn" onclick="sendAI()"><i class="ti ti-send"></i></button>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: SETTINGS (flex, outside scroll) ══════════════ -->
+    <div id="page-settings" class="page-flex" style="height: calc(844px - 46px - 60px - 58px); overflow-y: auto;">
+      <div style="padding: 14px 16px 8px; flex-shrink: 0;">
+        <div class="page-title">Настройки</div>
+      </div>
+
+      <!-- Current user card -->
+      <div style="margin: 0 16px 16px;">
+        <div class="card">
+          <div style="font-size: 10px; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Текущий аккаунт</div>
+          <div id="cur-user-card"></div>
+        </div>
+      </div>
+
+      <!-- Switch user -->
+      <div style="padding: 0 16px; margin-bottom: 8px;">
+        <div style="font-size: 10px; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: 0.5px;">Сменить аккаунт</div>
+      </div>
+      <div id="switch-user-list" style="margin-bottom: 16px;"></div>
+
+      <!-- Admin panel -->
+      <div id="admin-panel" style="display: none;">
+        <div style="padding: 0 16px; margin-bottom: 8px;">
+          <div class="page-title">Доступ к финансам</div>
+          <div style="font-size: 11.5px; color: var(--t3); margin-top: 3px;">Управляйте видимостью финансового блока для каждого сотрудника</div>
+        </div>
+        <div id="access-list"></div>
+      </div>
+
+      <!-- Company name -->
+      <div style="margin: 8px 16px 16px;">
+        <div class="card">
+          <div style="font-size: 10px; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Название компании</div>
+          <input class="fi" id="co-fi" placeholder="BuildFinance" value="BuildFinance" oninput="document.getElementById('co-name').textContent = this.value || 'BuildFinance'">
+        </div>
+      </div>
+
+      <div style="height: 20px;"></div>
+    </div>
+
+    <!-- Bottom Nav Bar -->
+    <div class="nav-bar">
+      <div class="nt active" id="nt-home" onclick="showTab('home')">
+        <i class="ti ti-layout-dashboard"></i>
+        <span>Сводка</span>
+      </div>
+      <div class="nt" id="nt-objects" onclick="showTab('objects')">
+        <i class="ti ti-building"></i>
+        <span>Объекты</span>
+      </div>
+      <button class="fab" onclick="openQuickAdd()" title="Быстрый платёж">
+        <i class="ti ti-plus"></i>
+      </button>
+      <div class="nt" id="nt-chat" onclick="showTab('chat')">
+        <i class="ti ti-message-2"></i>
+        <span>Чат</span>
+        <span class="badge-dot" id="badge-chat"></span>
+      </div>
+      <div class="nt" id="nt-advisor" onclick="showTab('advisor')">
+        <i class="ti ti-sparkles"></i>
+        <span>AI</span>
+      </div>
+    </div>
+
+  </div><!-- end .app -->
+
+  <!-- Sheet Overlay -->
+  <div class="sheet-overlay" id="sh-overlay" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet"></div>
+
+</div><!-- end device-frame -->
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════ */
+const USERS = [
+  { id: 'admin', name: 'Александр С.', init: 'АС', color: '#5DCAA5', tc: '#085041', role: 'admin', canSeeFin: true },
+  { id: 'mk',    name: 'Мария К.',     init: 'МК', color: '#85B7EB', tc: '#0C447C', role: 'manager', canSeeFin: true },
+  { id: 'ip',    name: 'Иван П.',      init: 'ИП', color: '#EF9F27', tc: '#633806', role: 'worker',  canSeeFin: false },
+  { id: 'dn',    name: 'Дарья Н.',     init: 'ДН', color: '#ED93B1', tc: '#993556', role: 'worker',  canSeeFin: false },
+];
+
+const CHATS = [
+  {
+    id: 'general', name: 'Общий чат', type: 'group', init: '#', color: '#534AB7', tc: '#EEEDFE',
+    msgs: [
+      { from: 'mk',    text: 'Доброе утро! Сегодня выезжаем на объект Long Island Pool в 9:00.', time: '09:02' },
+      { from: 'ip',    text: 'Принял, буду готов.', time: '09:05' },
+      { from: 'admin', text: 'Ок, не забудьте взять документы по смете.', time: '09:07' },
+      { from: 'dn',    text: 'Материалы загружены в фуру, выезжаем.', time: '09:15' },
+    ]
+  },
+  {
+    id: 'mk', name: 'Мария К.', type: 'dm', init: 'МК', color: '#85B7EB', tc: '#0C447C',
+    msgs: [
+      { from: 'mk',    text: 'Александр, клиент по Manhattan Office просит уточнить дату сдачи.', time: 'вчера' },
+      { from: 'admin', text: 'Скажи им — 25 июня, всё идёт по плану.', time: 'вчера' },
+      { from: 'mk',    text: 'Поняла, передам.', time: 'вчера' },
+    ]
+  },
+  {
+    id: 'ip', name: 'Иван П.', type: 'dm', init: 'ИП', color: '#EF9F27', tc: '#633806',
+    msgs: [
+      { from: 'ip',    text: 'Шеф, купил материалы на 30 400 ₽, чек сохранил.', time: '10:30' },
+      { from: 'admin', text: 'Хорошо, я внесу в учёт через AI-ассистента.', time: '10:32' },
+    ]
+  },
+  {
+    id: 'dn', name: 'Дарья Н.', type: 'dm', init: 'ДН', color: '#ED93B1', tc: '#993556',
+    msgs: [
+      { from: 'dn', text: 'Доставка на объект запланирована на завтра утром.', time: '09:50' },
+    ]
+  },
+];
+
+const OBJS = [
+  {
+    id: 0, name: 'Long Island Pool', loc: 'Long Island, NY', client: 'Sunset Homes LLC', status: 'active',
+    rev: 8781000, exp: 5584800,
+    tx: [
+      { d: 'Аванс клиента',        cat: 'Выручка',    amt:  3580000, type: 'income',  date: '05.06', method: 'wire' },
+      { d: 'Зарплата бригады',     cat: 'Зарплаты',   amt: -1655750, type: 'expense', date: '01.06', method: 'wire' },
+      { d: 'Материалы — плитка',   cat: 'Материалы',  amt:  -796550, type: 'expense', date: '03.06', method: 'card' },
+      { d: 'Доставка Майами—NY',   cat: 'Логистика',  amt:   -19700, type: 'expense', date: '12.06', method: 'cash' },
+    ],
+    smeta: [
+      { name: 'Бетонные работы', client: 1074000, salary: 608600 },
+      { name: 'Отделка',         client: 2148000, salary: 1118750 },
+      { name: 'Сантехника',      client: 1611000, salary: 823400 },
+    ]
+  },
+  {
+    id: 1, name: 'Manhattan Office', loc: 'Manhattan, NY', client: 'Nexus Group Inc', status: 'active',
+    rev: 10024000, exp: 6981000,
+    tx: [
+      { d: 'Оплата дизайн-проекта', cat: 'Выручка',   amt:  3132500, type: 'income',  date: '08.06', method: 'wire' },
+      { d: 'Стройматериалы',        cat: 'Материалы', amt: -1969900, type: 'expense', date: '06.06', method: 'card' },
+      { d: 'Зарплата команды',      cat: 'Зарплаты',  amt: -2506000, type: 'expense', date: '01.06', method: 'wire' },
+    ],
+    smeta: [
+      { name: 'Перепланировка', client: 4027500, salary: 1969900 },
+      { name: 'Электрика',      client: 2506000, salary: 1253000 },
+    ]
+  },
+  {
+    id: 2, name: 'Brooklyn Apt', loc: 'Brooklyn, NY', client: 'Частный заказ', status: 'done',
+    rev: 3445250, exp: 1960550,
+    tx: [
+      { d: 'Финальный расчёт',     cat: 'Выручка',   amt:  1655750, type: 'income',  date: '10.06', method: 'cash' },
+      { d: 'Отделочные работы',    cat: 'Зарплаты',  amt:  -877150, type: 'expense', date: '28.05', method: 'wire' },
+    ],
+    smeta: [
+      { name: 'Косметический ремонт', client: 3445250, salary: 1700500 },
+    ]
+  },
+];
+
+const AI_TIPS = [
+  'Рентабельность выше 30% — отличный показатель для строительства. Друкер: поддерживайте стабильно 25–35%.',
+  'Баффет: держите 3–6 месяцев операционных расходов в ликвидном резерве. По вашим данным — рекомендуется около 4,3 млн ₽.',
+  'Zero-Based Budgeting: пересматривайте каждую статью расходов с нуля каждый квартал — экономия 15–25% за первый год.',
+  'Cash flow совет: вводите предоплату 30–40% для всех новых объектов. Это устраняет кассовые разрывы и снижает риск.',
+  'Правило 50/30/20 для бизнеса: 50% выручки — операционные расходы, 30% — реинвестирование, 20% — резерв и прибыль.',
+];
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+let CUR_USER = USERS[0];
+let activeObjId = 0;
+let activeChatId = 'general';
+let currentTab = 'home';
+
+/* ═══════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════ */
+const fmtR = n => Math.round(n).toLocaleString('ru-RU') + ' ₽';
+const fmtRK = n => {
+  n = Math.abs(n);
+  if (n >= 1000000) return (n / 1000000).toFixed(2) + ' млн ₽';
+  if (n >= 1000) return Math.round(n / 1000) + ' тыс. ₽';
+  return Math.round(n) + ' ₽';
+};
+const today = () => {
+  const d = new Date();
+  return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0');
+};
+const roleName = r => ({ admin: 'Администратор', manager: 'Менеджер', worker: 'Сотрудник' }[r] || r);
+const methodName = m => ({ cash: 'Наличные', card: 'Карта', wire: 'Перевод' }[m] || m);
+const methodChip = m => `<span class="chip ${m==='cash'?'ch-cash':m==='card'?'ch-card':'ch-wire'}">${methodName(m)}</span>`;
+
+/* ═══════════════════════════════════════════════════════
+   CLOCK
+═══════════════════════════════════════════════════════ */
+function updateClock() {
+  const d = new Date();
+  document.getElementById('sb-time').textContent =
+    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 15000);
+
+/* ═══════════════════════════════════════════════════════
+   COMPANY NAME
+═══════════════════════════════════════════════════════ */
+function editCoName() {
+  document.getElementById('co-name').style.display = 'none';
+  const inp = document.getElementById('co-input');
+  inp.style.display = 'inline-block';
+  inp.focus(); inp.select();
+}
+function saveCoName() {
+  const v = document.getElementById('co-input').value.trim() || 'BuildFinance';
+  document.getElementById('co-name').textContent = v;
+  document.getElementById('co-name').style.display = '';
+  document.getElementById('co-input').style.display = 'none';
+  const fi = document.getElementById('co-fi');
+  if (fi) fi.value = v;
+}
+
+/* ═══════════════════════════════════════════════════════
+   USER SWITCH
+═══════════════════════════════════════════════════════ */
+function switchUser(id) {
+  CUR_USER = USERS.find(u => u.id === id) || USERS[0];
+  const av = document.getElementById('cur-av');
+  av.style.background = CUR_USER.color;
+  av.style.color = CUR_USER.tc;
+  av.textContent = CUR_USER.init;
+  renderAll();
+}
+
+/* ═══════════════════════════════════════════════════════
+   FINANCE ACCESS CONTROL
+═══════════════════════════════════════════════════════ */
+function applyFinanceAccess() {
+  const can = CUR_USER.canSeeFin;
+  document.getElementById('finance-block').style.display = can ? 'block' : 'none';
+  document.getElementById('no-fin-msg').style.display = can ? 'none' : 'block';
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER: HOME
+═══════════════════════════════════════════════════════ */
+function renderHome() {
+  applyFinanceAccess();
+
+  const totR = OBJS.reduce((a, o) => a + o.rev, 0);
+  const totE = OBJS.reduce((a, o) => a + o.exp, 0);
+  const pr = totR - totE;
+  const margin = (pr / totR * 100).toFixed(1);
+
+  document.getElementById('h-profit').textContent = fmtR(pr);
+  document.getElementById('h-sub').textContent = `рентабельность ${margin}% · ${OBJS.length} объекта`;
+  document.getElementById('h-rev').textContent = fmtRK(totR);
+  document.getElementById('h-exp').textContent = fmtRK(totE);
+  document.getElementById('h-cnt').textContent = OBJS.length;
+
+  // Object scroll
+  const os = document.getElementById('obj-scroll-home');
+  os.innerHTML = '';
+  OBJS.forEach(o => {
+    const pr = o.rev - o.exp;
+    const div = document.createElement('div');
+    div.className = 'op';
+    div.innerHTML = `
+      <div class="op-n">${o.name}</div>
+      <div class="op-l">${o.loc}</div>
+      <div class="op-a">${fmtR(pr)}</div>
+      <span class="badge ${o.status==='active'?'badge-active':'badge-done'}">${o.status==='active'?'В работе':'Завершён'}</span>`;
+    div.onclick = () => { showTab('objects'); setTimeout(() => renderObjDetail(o.id), 80); };
+    os.appendChild(div);
+  });
+
+  // Last transactions
+  let allTx = [];
+  OBJS.forEach(o => o.tx.forEach(t => allTx.push({...t, objName: o.name})));
+  const tl = document.getElementById('last-tx-list');
+  tl.innerHTML = '';
+  allTx.slice(0, 5).forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'tx-row';
+    row.innerHTML = `
+      <div class="tx-ico" style="background:${t.type==='income'?'var(--grb)':'var(--rdb)'}">
+        <i class="ti ti-${t.type==='income'?'arrow-down-circle':'arrow-up-circle'}"
+           style="color:${t.type==='income'?'var(--gr)':'var(--rd)'}"></i>
+      </div>
+      <div class="tx-inf">
+        <div class="tx-n">${t.d}</div>
+        <div class="tx-m">${t.date} · ${methodChip(t.method)} · ${t.objName}</div>
+      </div>
+      <div class="tx-a ${t.amt>0?'up':'down'}">${t.amt>0?'+':'−'}${fmtR(Math.abs(t.amt))}</div>`;
+    tl.appendChild(row);
+  });
+  document.getElementById('tx-cnt-lbl').textContent = allTx.length + ' операций';
+
+  // AI tip
+  document.getElementById('ai-tip-home').textContent =
+    AI_TIPS[Math.floor(Math.random() * AI_TIPS.length)];
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER: OBJECTS
+═══════════════════════════════════════════════════════ */
+function renderObjList() {
+  const el = document.getElementById('obj-list-full');
+  if (!el) return;
+  el.innerHTML = '';
+  OBJS.forEach(o => {
+    const pr = o.rev - o.exp;
+    const mn = (pr / o.rev * 100).toFixed(1);
+    const div = document.createElement('div');
+    div.style.cssText = 'margin: 0 16px 10px;';
+    div.className = 'card';
+    div.style.cursor = 'pointer';
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <div style="font-family:'Syne',sans-serif; font-size:13.5px; font-weight:600; color:var(--t);">${o.name}</div>
+          <div style="font-size:11px; color:var(--t3); margin-top:2px;">${o.client} · ${o.loc}</div>
+        </div>
+        <span class="badge ${o.status==='active'?'badge-active':'badge-done'}">${o.status==='active'?'В работе':'Завершён'}</span>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:12px; flex-wrap:wrap;">
+        <div><div style="font-size:9.5px;color:var(--t3);">Выручка</div><div style="font-size:12.5px;font-weight:600;color:var(--gr);">${fmtR(o.rev)}</div></div>
+        <div><div style="font-size:9.5px;color:var(--t3);">Расходы</div><div style="font-size:12.5px;font-weight:600;color:var(--rd);">${fmtR(o.exp)}</div></div>
+        <div><div style="font-size:9.5px;color:var(--t3);">Прибыль</div><div style="font-size:12.5px;font-weight:600;color:var(--t);">${fmtR(pr)}</div></div>
+        <div><div style="font-size:9.5px;color:var(--t3);">Маржа</div><div style="font-size:12.5px;font-weight:600;">${mn}%</div></div>
+      </div>`;
+    div.onclick = () => renderObjDetail(o.id);
+    el.appendChild(div);
+  });
+  renderObjDetail(activeObjId);
+}
+
+function renderObjDetail(id) {
+  activeObjId = id;
+  const o = OBJS[id];
+  const pr = o.rev - o.exp;
+  const mn = (pr / o.rev * 100).toFixed(1);
+  const det = document.getElementById('obj-detail-area');
+  if (!det) return;
+
+  det.innerHTML = `
+    <div style="padding: 4px 16px 10px; display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--t);">${o.name}</div>
+      <div style="display:flex; gap:6px;">
+        <label style="font-size:11px; color:var(--t2); cursor:pointer; display:flex; align-items:center; gap:4px; border:0.5px solid var(--b2); padding:5px 10px; border-radius:var(--r);">
+          <i class="ti ti-upload" style="font-size:12px;"></i> PDF
+          <input type="file" accept=".pdf" style="display:none;" onchange="handlePdfUpload(${id}, this)">
+        </label>
+        <button onclick="showSmetaSheet(${id})" style="font-size:11px; color:var(--gold); background:none; border:none; cursor:pointer; font-family:'Inter',sans-serif; font-weight:500;">Смета →</button>
+      </div>
+    </div>
+    <div class="metrics-2">
+      <div class="met"><div class="met-l">Выручка</div><div class="met-v up">${fmtR(o.rev)}</div></div>
+      <div class="met"><div class="met-l">Расходы</div><div class="met-v down">${fmtR(o.exp)}</div></div>
+      <div class="met"><div class="met-l">Прибыль</div><div class="met-v">${fmtR(pr)}</div></div>
+      <div class="met"><div class="met-l">Рентабельность</div><div class="met-v">${mn}%</div></div>
+    </div>
+    <div class="sec">
+      <div class="card">
+        <div style="font-family:'Syne',sans-serif; font-size:12.5px; font-weight:600; margin-bottom:10px;">
+          Операции (${o.tx.length})
+        </div>
+        <div id="dtx-${id}"></div>
+      </div>
+    </div>`;
+
+  const txEl = document.getElementById('dtx-' + id);
+  o.tx.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'tx-row';
+    row.innerHTML = `
+      <div class="tx-ico" style="background:${t.type==='income'?'var(--grb)':'var(--rdb)'}">
+        <i class="ti ti-${t.type==='income'?'arrow-down-circle':'arrow-up-circle'}"
+           style="color:${t.type==='income'?'var(--gr)':'var(--rd)'}"></i>
+      </div>
+      <div class="tx-inf">
+        <div class="tx-n">${t.d}</div>
+        <div class="tx-m">${t.cat} · ${t.date} · ${methodChip(t.method)}</div>
+      </div>
+      <div class="tx-a ${t.amt>0?'up':'down'}">${t.amt>0?'+':'−'}${fmtR(Math.abs(t.amt))}</div>`;
+    txEl.appendChild(row);
+  });
+}
+
+function handlePdfUpload(objId, input) {
+  if (input.files.length) {
+    const fname = input.files[0].name;
+    alert(`PDF «${fname}» прикреплён к объекту «${OBJS[objId].name}».\n\nВ полной версии файл загружается на сервер и привязывается к сметным данным.`);
+  }
+}
+
+function showSmetaSheet(id) {
+  const o = OBJS[id];
+  const totC = o.smeta.reduce((a, s) => a + s.client, 0);
+  const totS = o.smeta.reduce((a, s) => a + s.salary, 0);
+  const totR_val = ((totC - totS) / totC * 100).toFixed(1);
+
+  const rows = o.smeta.map(s => {
+    const r = ((s.client - s.salary) / s.client * 100).toFixed(1);
+    const color = parseFloat(r) > 20 ? 'var(--gr)' : 'var(--rd)';
+    return `<tr>
+      <td>${s.name}</td>
+      <td style="text-align:right;">${fmtR(s.client)}</td>
+      <td style="text-align:right;">${fmtR(s.salary)}</td>
+      <td style="text-align:right;">${fmtR(s.client - s.salary)}</td>
+      <td style="text-align:right; color:${color};">${r}%</td>
+    </tr>`;
+  }).join('');
+
+  showSheet(`
+    <div class="sh-title">Смета — ${o.name}</div>
+    <div style="font-size:11px; color:var(--t3); margin-bottom:14px;">${o.client}</div>
+    <div style="overflow-x:auto;">
+      <table class="smeta-t">
+        <thead>
+          <tr>
+            <th>Раздел</th>
+            <th style="text-align:right;">Клиент</th>
+            <th style="text-align:right;">Зарплата</th>
+            <th style="text-align:right;">Прибыль</th>
+            <th style="text-align:right;">Рент.</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+          <tr class="smeta-total">
+            <td><strong>Итого</strong></td>
+            <td style="text-align:right; color:var(--gr);"><strong>${fmtR(totC)}</strong></td>
+            <td style="text-align:right;"><strong>${fmtR(totS)}</strong></td>
+            <td style="text-align:right; color:var(--gr);"><strong>${fmtR(totC - totS)}</strong></td>
+            <td style="text-align:right; color:var(--gr);"><strong>${totR_val}%</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <button class="btn-full btn-gold" style="margin-top:16px;" onclick="closeSheet()">Закрыть</button>
+  `);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER: CHAT
+═══════════════════════════════════════════════════════ */
+function renderChatList() {
+  const el = document.getElementById('chat-list-items');
+  if (!el) return;
+  el.innerHTML = '';
+  CHATS.forEach(ch => {
+    const last = ch.msgs[ch.msgs.length - 1];
+    const fromU = USERS.find(u => u.id === last.from);
+    const prefix = ch.type === 'group' && fromU ? fromU.init + ': ' : '';
+    const div = document.createElement('div');
+    div.className = 'ci' + (ch.id === activeChatId ? ' active' : '');
+    div.innerHTML = `
+      <div class="ci-av" style="width:42px;height:42px;font-size:13px;background:${ch.color};color:${ch.tc};">${ch.init}</div>
+      <div class="ci-inf">
+        <div class="ci-name">${ch.name}${ch.type==='group'?'<span style="font-size:10px;color:var(--t3);margin-left:5px;">группа</span>':''}</div>
+        <div class="ci-last">${prefix}"${last.text}"</div>
+      </div>
+      <div class="ci-meta"><span class="ci-time">${last.time}</span></div>`;
+    div.onclick = () => openChatRoom(ch.id);
+    el.appendChild(div);
+  });
+}
+
+function openChatRoom(chatId) {
+  activeChatId = chatId;
+  const ch = CHATS.find(c => c.id === chatId);
+  document.getElementById('chat-list-view').style.display = 'none';
+  const rv = document.getElementById('chat-room-view');
+  rv.style.display = 'flex';
+
+  rv.innerHTML = `
+    <div class="chat-topbar">
+      <button onclick="backToChatList()" style="background:none;border:none;cursor:pointer;color:var(--t2);padding:2px;">
+        <i class="ti ti-arrow-left" style="font-size:20px;"></i>
+      </button>
+      <div class="ci-av" style="width:34px;height:34px;font-size:12px;background:${ch.color};color:${ch.tc};">${ch.init}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--t);">${ch.name}</div>
+        <div style="font-size:10.5px;color:var(--t3);">${ch.type==='group'?USERS.length+' участников':'В сети'}</div>
+      </div>
+      ${ch.type==='group'?`<button onclick="showGroupInfo()" style="background:none;border:none;cursor:pointer;"><i class="ti ti-info-circle" style="font-size:20px;color:var(--t3);"></i></button>`:''}
+    </div>
+    <div class="chat-msgs" id="room-msgs"></div>
+    <div class="chat-in-row">
+      <input class="chat-in" id="room-input" placeholder="Сообщение..." onkeydown="if(event.key==='Enter') sendMsg('${chatId}')">
+      <button class="send-btn" onclick="sendMsg('${chatId}')"><i class="ti ti-send"></i></button>
+    </div>`;
+
+  renderRoomMsgs(chatId);
+}
+
+function renderRoomMsgs(chatId) {
+  const ch = CHATS.find(c => c.id === chatId);
+  const el = document.getElementById('room-msgs');
+  if (!el) return;
+  el.innerHTML = '';
+  ch.msgs.forEach(m => {
+    const isMe = m.from === CUR_USER.id;
+    const fromU = USERS.find(u => u.id === m.from);
+    if (!isMe && ch.type === 'group') {
+      const sn = document.createElement('div');
+      sn.className = 'msg-sender';
+      sn.textContent = fromU ? fromU.name : '';
+      el.appendChild(sn);
+    }
+    const d = document.createElement('div');
+    d.className = 'msg ' + (isMe ? 'me' : 'them');
+    d.innerHTML = m.text + `<span class="msg-time">${m.time}</span>`;
+    el.appendChild(d);
+  });
+  el.scrollTop = el.scrollHeight;
+}
+
+function sendMsg(chatId) {
+  const inp = document.getElementById('room-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  const ch = CHATS.find(c => c.id === chatId);
+  const d = new Date();
+  const time = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  ch.msgs.push({ from: CUR_USER.id, text, time });
+  renderRoomMsgs(chatId);
+}
+
+function backToChatList() {
+  document.getElementById('chat-list-view').style.display = 'block';
+  document.getElementById('chat-room-view').style.display = 'none';
+  renderChatList();
+}
+
+function showGroupInfo() {
+  const members = USERS.map(u => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--b);">
+      <div class="ci-av" style="width:34px;height:34px;font-size:11px;background:${u.color};color:${u.tc};">${u.init}</div>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--t);">${u.name}</div>
+        <div style="font-size:11px;color:var(--t3);">${roleName(u.role)}</div>
+      </div>
+    </div>`).join('');
+  showSheet(`<div class="sh-title">Участники группы</div>${members}<button class="btn-full btn-dark" style="margin-top:10px;" onclick="closeSheet()">Закрыть</button>`);
+}
+
+function openNewDM() {
+  const list = USERS.filter(u => u.id !== CUR_USER.id).map(u => `
+    <div class="user-row" onclick="startDM('${u.id}')">
+      <div class="ci-av" style="width:38px;height:38px;font-size:12px;background:${u.color};color:${u.tc};">${u.init}</div>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--t);">${u.name}</div>
+        <div style="font-size:11px;color:var(--t3);">${roleName(u.role)}</div>
+      </div>
+      <i class="ti ti-chevron-right" style="font-size:16px;color:var(--t3);margin-left:auto;"></i>
+    </div>`).join('');
+  showSheet(`<div class="sh-title">Новое сообщение</div>${list}`);
+}
+
+function startDM(uid) {
+  closeSheet();
+  const u = USERS.find(x => x.id === uid);
+  if (!CHATS.find(c => c.id === uid)) {
+    CHATS.push({ id: uid, name: u.name, type: 'dm', init: u.init, color: u.color, tc: u.tc, msgs: [] });
+  }
+  showTab('chat');
+  setTimeout(() => openChatRoom(uid), 100);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER: SETTINGS
+═══════════════════════════════════════════════════════ */
+function renderSettings() {
+  // Current user
+  const cuc = document.getElementById('cur-user-card');
+  if (cuc) {
+    cuc.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="ci-av" style="width:42px;height:42px;font-size:14px;background:${CUR_USER.color};color:${CUR_USER.tc};">${CUR_USER.init}</div>
+        <div>
+          <div style="font-size:13.5px;font-weight:500;color:var(--t);">${CUR_USER.name}</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px;">
+            <span class="badge ${CUR_USER.role==='admin'?'badge-admin':CUR_USER.role==='manager'?'badge-mgr':'badge-worker'}">${roleName(CUR_USER.role)}</span>
+            &nbsp;
+            <span style="color:${CUR_USER.canSeeFin?'var(--gr)':'var(--rd)'}">
+              ${CUR_USER.canSeeFin?'Финансы видны':'Финансы скрыты'}
+            </span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Switch user
+  const sul = document.getElementById('switch-user-list');
+  if (sul) {
+    sul.innerHTML = '';
+    USERS.filter(u => u.id !== CUR_USER.id).forEach(u => {
+      const d = document.createElement('div');
+      d.style.cssText = 'margin: 0 16px 8px;';
+      d.innerHTML = `
+        <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:10px;" onclick="switchUser('${u.id}'); renderSettings();">
+          <div class="ci-av" style="width:36px;height:36px;font-size:12px;background:${u.color};color:${u.tc};flex-shrink:0;">${u.init}</div>
+          <div style="flex:1;">
+            <div style="font-size:12.5px;font-weight:500;color:var(--t);">${u.name}</div>
+            <div style="font-size:11px;color:var(--t3);">${roleName(u.role)}</div>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:16px;color:var(--t3);"></i>
+        </div>`;
+      sul.appendChild(d);
+    });
+  }
+
+  // Admin panel
+  const ap = document.getElementById('admin-panel');
+  if (ap) ap.style.display = CUR_USER.role === 'admin' ? 'block' : 'none';
+
+  const al = document.getElementById('access-list');
+  if (al) {
+    al.innerHTML = '';
+    USERS.filter(u => u.id !== 'admin').forEach(u => {
+      const d = document.createElement('div');
+      d.className = 'user-row';
+      d.innerHTML = `
+        <div class="ci-av" style="width:38px;height:38px;font-size:12px;background:${u.color};color:${u.tc};flex-shrink:0;">${u.init}</div>
+        <div style="flex:1;">
+          <div style="font-size:12.5px;font-weight:500;color:var(--t);">${u.name}</div>
+          <div style="font-size:11px;color:${u.canSeeFin?'var(--gr)':'var(--rd)'};">
+            ${u.canSeeFin?'Видит финансы':'Финансы скрыты'}
+          </div>
+        </div>
+        <button class="toggle ${u.canSeeFin?'on':'off'}" id="tog-${u.id}" onclick="toggleFin('${u.id}')"></button>`;
+      al.appendChild(d);
+    });
+  }
+}
+
+function toggleFin(uid) {
+  const u = USERS.find(x => x.id === uid);
+  if (!u) return;
+  u.canSeeFin = !u.canSeeFin;
+  if (CUR_USER.id === uid) applyFinanceAccess();
+  renderSettings();
+}
+
+/* ═══════════════════════════════════════════════════════
+   QUICK ADD (FAB)
+═══════════════════════════════════════════════════════ */
+function openQuickAdd() {
+  showSheet(`
+    <div class="sh-title">Быстрый платёж</div>
+    <div class="fg">
+      <label class="fl">Описание</label>
+      <input class="fi" id="qa-d" placeholder="Доставка, материалы, аванс клиента...">
+    </div>
+    <div class="f2">
+      <div class="fg">
+        <label class="fl">Сумма (₽)</label>
+        <input class="fi" type="number" id="qa-a" placeholder="0">
+      </div>
+      <div class="fg">
+        <label class="fl">Тип</label>
+        <select class="fi" id="qa-t">
+          <option value="expense">Расход</option>
+          <option value="income">Доход</option>
+        </select>
+      </div>
+    </div>
+    <div class="f2">
+      <div class="fg">
+        <label class="fl">Объект</label>
+        <select class="fi" id="qa-o">
+          ${OBJS.map((o,i) => `<option value="${i}">${o.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Способ оплаты</label>
+        <select class="fi" id="qa-m">
+          <option value="cash">Наличные</option>
+          <option value="card">Карта</option>
+          <option value="wire">Перевод</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Категория</label>
+      <select class="fi" id="qa-c">
+        <option>Зарплаты</option>
+        <option>Материалы</option>
+        <option>Логистика</option>
+        <option>Выручка</option>
+        <option>Аренда</option>
+        <option>Прочее</option>
+      </select>
+    </div>
+    <button class="btn-full btn-dark" onclick="saveQuickAdd()">
+      <i class="ti ti-check" style="font-size:14px;"></i> Сохранить операцию
+    </button>
+  `);
+}
+
+function saveQuickAdd() {
+  const desc  = document.getElementById('qa-d').value.trim() || 'Операция';
+  const amt   = parseFloat(document.getElementById('qa-a').value) || 0;
+  const type  = document.getElementById('qa-t').value;
+  const objId = parseInt(document.getElementById('qa-o').value);
+  const meth  = document.getElementById('qa-m').value;
+  const cat   = document.getElementById('qa-c').value;
+  if (amt <= 0) { alert('Введите сумму больше нуля'); return; }
+  const finalAmt = type === 'income' ? amt : -amt;
+  OBJS[objId].tx.unshift({ d: desc, cat, amt: finalAmt, type, date: today(), method: meth });
+  if (type === 'expense') OBJS[objId].exp += amt;
+  else OBJS[objId].rev += amt;
+  closeSheet();
+  renderAll();
+}
+
+/* ═══════════════════════════════════════════════════════
+   ADD OBJECT
+═══════════════════════════════════════════════════════ */
+function openAddObject() {
+  showSheet(`
+    <div class="sh-title">Новый объект</div>
+    <div class="fg"><label class="fl">Название</label><input class="fi" id="no-name" placeholder="Long Island Pool"></div>
+    <div class="f2">
+      <div class="fg"><label class="fl">Адрес / локация</label><input class="fi" id="no-loc" placeholder="New York, NY"></div>
+      <div class="fg"><label class="fl">Клиент</label><input class="fi" id="no-client" placeholder="ООО «Клиент»"></div>
+    </div>
+    <div class="fg"><label class="fl">Сумма договора (₽)</label><input class="fi" type="number" id="no-rev" placeholder="0"></div>
+    <button class="btn-full btn-dark" onclick="saveNewObj()">
+      <i class="ti ti-plus" style="font-size:14px;"></i> Создать объект
+    </button>
+  `);
+}
+
+function saveNewObj() {
+  const name   = document.getElementById('no-name').value.trim();
+  const loc    = document.getElementById('no-loc').value.trim() || '—';
+  const client = document.getElementById('no-client').value.trim() || '—';
+  const rev    = parseFloat(document.getElementById('no-rev').value) || 0;
+  if (!name) { alert('Введите название объекта'); return; }
+  OBJS.push({ id: OBJS.length, name, loc, client, status: 'active', rev, exp: 0, tx: [], smeta: [] });
+  closeSheet();
+  renderAll();
+  showTab('objects');
+}
+
+/* ═══════════════════════════════════════════════════════
+   AI ASSISTANT
+═══════════════════════════════════════════════════════ */
+function fillAI(txt) {
+  showTab('advisor');
+  setTimeout(() => { document.getElementById('ai-input').value = txt; }, 100);
+}
+
+function parsePayment(text) {
+  const lower = text.toLowerCase();
+  // Extract amount (handles 19700₽, 19 700, 19.700 etc.)
+  let amt = 0;
+  const mAmt = text.replace(/\s/g, '').match(/(\d+[\d.,]*)\s*[₽рр]?/i);
+  if (mAmt) amt = parseFloat(mAmt[1].replace(',', '.'));
+
+  // Find object
+  let objId = -1;
+  OBJS.forEach(o => { if (lower.includes(o.name.toLowerCase())) objId = o.id; });
+
+  // Income vs expense
+  let type = 'expense';
+  if (lower.includes('получил') || lower.includes('оплата от') || lower.includes('аванс от') || lower.includes('приход')) type = 'income';
+
+  // Category
+  let cat = 'Прочее';
+  if (lower.includes('зарплат') || lower.includes('бригад') || lower.includes('рабочим')) cat = 'Зарплаты';
+  else if (lower.includes('материал') || lower.includes('плитк') || lower.includes('бетон') || lower.includes('купил')) cat = 'Материалы';
+  else if (lower.includes('доставк') || lower.includes('логистик') || lower.includes('майами') || lower.includes('нью-йорк')) cat = 'Логистика';
+  else if (lower.includes('аренд')) cat = 'Аренда';
+  else if (lower.includes('клиент') || lower.includes('аванс') || lower.includes('оплат') || lower.includes('получил')) cat = 'Выручка';
+
+  // Method
+  let method = 'cash';
+  if (lower.includes('перевод') || lower.includes('wire') || lower.includes('безнал')) method = 'wire';
+  else if (lower.includes('карт') || lower.includes('card')) method = 'card';
+
+  return { amt, objId, type, cat, method };
+}
+
+async function sendAI() {
+  const inp = document.getElementById('ai-input');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+
+  const msgs = document.getElementById('ai-msgs');
+  const um = document.createElement('div');
+  um.className = 'amsg user';
+  um.textContent = q;
+  msgs.appendChild(um);
+
+  const ld = document.createElement('div');
+  ld.className = 'amsg ai';
+  ld.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+  msgs.appendChild(ld);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const p = parsePayment(q);
+  await new Promise(r => setTimeout(r, 850));
+
+  let reply = '';
+  if (p.amt > 0 && p.objId >= 0) {
+    const o = OBJS[p.objId];
+    const finalAmt = p.type === 'income' ? p.amt : -p.amt;
+    o.tx.unshift({ d: q.substring(0, 60), cat: p.cat, amt: finalAmt, type: p.type, date: today(), method: p.method });
+    if (p.type === 'expense') o.exp += p.amt;
+    else o.rev += p.amt;
+    const pr = o.rev - o.exp;
+    const mn = (pr / o.rev * 100).toFixed(1);
+    reply = `Записал в «${o.name}»:\n\n💰 ${fmtR(p.amt)}\n📂 ${p.cat}\n💳 ${methodName(p.method)}\n📅 ${today()}\n\nПрибыль объекта: ${fmtR(pr)}\nРентабельность: ${mn}%`;
+    renderAll();
+  } else if (p.amt > 0 && p.objId < 0) {
+    reply = `Нашёл сумму ${fmtR(p.amt)}, но не определил объект.\n\nУточните название объекта:\n` +
+      OBJS.map(o => `• «...объект ${o.name}»`).join('\n');
+  } else {
+    // General finance question
+    const totalPr = OBJS.reduce((a, o) => a + (o.rev - o.exp), 0);
+    const tips = [
+      `По вашим данным общая прибыль составляет ${fmtR(totalPr)}. Рекомендую держать 20% от этой суммы в резерве — это классический принцип финансовой устойчивости по Баффету.`,
+      `Zero-Based Budgeting: начните следующий квартал с нулевого бюджета по каждой статье и обоснуйте каждую трату. McKinsey: это даёт экономию 15–25%.`,
+      `Правило 50/30/20 для бизнеса: 50% — операционные расходы, 30% — реинвестирование в рост, 20% — прибыль и резерв. Проверьте ваши объекты по этой структуре.`,
+      `Введите предоплату 30–40% для всех новых клиентов. Это сокращает кассовые разрывы и снижает риск невыплат.`,
+      `Средняя рентабельность ваших объектов: ${(OBJS.reduce((a,o) => a + (o.rev-o.exp)/o.rev, 0) / OBJS.length * 100).toFixed(1)}%. Строительная отрасль: норма 20–35%.`,
+    ];
+    reply = tips[Math.floor(Math.random() * tips.length)];
+  }
+
+  ld.textContent = reply;
+  ld.style.whiteSpace = 'pre-line';
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+/* ═══════════════════════════════════════════════════════
+   BOTTOM SHEET
+═══════════════════════════════════════════════════════ */
+function showSheet(html) {
+  const sh = document.getElementById('sheet');
+  const ov = document.getElementById('sh-overlay');
+  sh.innerHTML = '<div class="sh-handle"></div>' + html;
+  ov.style.display = 'block';
+  requestAnimationFrame(() => sh.classList.add('open'));
+}
+function closeSheet() {
+  const sh = document.getElementById('sheet');
+  const ov = document.getElementById('sh-overlay');
+  sh.classList.remove('open');
+  setTimeout(() => { ov.style.display = 'none'; }, 280);
+}
+
+/* ═══════════════════════════════════════════════════════
+   TAB NAVIGATION
+═══════════════════════════════════════════════════════ */
+function showTab(tab) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+  document.querySelectorAll('.page-flex').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+  document.querySelectorAll('.nt').forEach(t => t.classList.remove('active'));
+
+  const pg = document.getElementById('page-' + tab);
+  if (pg) {
+    pg.classList.add('active');
+    pg.style.display = 'block';
+  }
+  const pf = document.getElementById('page-' + tab);
+  if (pf && pf.classList.contains('page-flex')) {
+    pf.style.display = 'flex';
+  }
+
+  const nt = document.getElementById('nt-' + tab);
+  if (nt) nt.classList.add('active');
+
+  currentTab = tab;
+
+  if (tab === 'home')     renderHome();
+  if (tab === 'objects')  renderObjList();
+  if (tab === 'chat')     { renderChatList(); document.getElementById('chat-list-view').style.display = 'block'; document.getElementById('chat-room-view').style.display = 'none'; }
+  if (tab === 'settings') renderSettings();
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER ALL
+═══════════════════════════════════════════════════════ */
+function renderAll() {
+  if (currentTab === 'home')     renderHome();
+  if (currentTab === 'objects')  renderObjList();
+  if (currentTab === 'settings') renderSettings();
+}
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════ */
+(function init() {
+  // Make advisor and settings pages work as flex
+  const advisor = document.getElementById('page-advisor');
+  const settings = document.getElementById('page-settings');
+  advisor.classList.add('page-flex');
+  settings.classList.add('page-flex');
+
+  showTab('home');
+})();
+</script>
+</body>
+</html>
